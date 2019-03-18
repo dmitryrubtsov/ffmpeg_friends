@@ -2,7 +2,6 @@ from bs4 import BeautifulSoup
 import requests
 import re
 import os
-import pickle
 import subprocess
 
 
@@ -99,6 +98,8 @@ def return_metadata_list(id_episode):
 
 
 def ffmpeg(path):
+    '''Функция конвертирует файл path набором библиотек ffmpeg.
+    path(str) --> 1'''
     global OUTPATH
 
     id_episode = return_id_episode(path)
@@ -124,11 +125,32 @@ def ffmpeg(path):
     return 1
 
 
+def return_file_list(path, type_file):
+    '''Функция возвращает лист файлов с расширением type_file из папки path.
+    path(str), type_file(str) --> list'''
+    file_list = []
+    for root, dirs, files in os.walk(path):
+        for _file in files:
+            if _file.endswith(type_file):
+                file_list.append(os.path.join(root, _file))
+    return file_list
+
+
 if __name__ == '__main__':
-    # dict_metadata = dict_episode()
     root_dir = os.path.dirname(__file__)
-    OUTPATH = '/tmp'
-    test_path = '/home/dmitry/Документы/git/ffmpeg_friends/__pycache__/Friends_AVC/Druzja.(Sezon.10).2003-2004.x264.HDRip.(AVC).iSalamandra/Druzja.S10E10.x264.HDRip.(AVC).iSalamandra.mkv'
-    with open(os.path.join(root_dir, '__pycache__/data.p'), 'rb') as f:
-        dict_metadata = pickle.load(f)
-    ffmpeg(test_path)
+    PATH = input('Input folder: ' + root_dir)
+    OUTPATH = input('Destination folder: ' + root_dir + '/OUT/')
+
+    if PATH == '':
+        PATH = root_dir
+
+    if OUTPATH == '':
+        OUTPATH = os.path.join(root_dir, 'OUT')
+        if not os.path.exists(OUTPATH):
+            os.makedirs(OUTPATH)
+
+    dict_metadata = dict_episode()
+    file_list = return_file_list(PATH, ".mkv")
+
+    for file_path in file_list:
+        ffmpeg(file_path)
